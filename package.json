@@ -1,0 +1,35 @@
+{
+  "name": "server",
+  "version": "1.0.0",
+  "description": "",
+  "main": "dist/server.ts",
+  "scripts": {
+    "build-ts": "tsc",
+    "start": "npm run serve",
+    "serve": "node dist/server.js",
+    "watch-node": "nodemon dist/server.js",
+    "watch-ts": "tsc -w",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/techclubjacobs/server.git"
+  },
+  "author": "Steven Abreu",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/techclubjacobs/server/issues"
+  },
+  "homepage": "https://github.com/techclubjacobs/server#readme",
+  "devDependencies": {
+    "nodemon": "^1.18.10",
+    "tslint": "^5.14.0",
+    "typescript": "^3.3.4000"
+  },
+  "dependencies": {
+    "@types/express": "^4.16.1",
+    "@types/mysql": "^2.15.5",
+    "express": "^4.16.4",
+    "mysql": "^2.16.0"
+  }
+}
