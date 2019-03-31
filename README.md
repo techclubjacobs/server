@@ -25,6 +25,16 @@ mysql> source ./src/tools/create_db.sql
 
 ### Node Server
 
+You will need to install `npm` and `node` for this server.
+
+First of all, run 
+
+```bash
+npm install
+```
+
+to install all necessary packages.
+
 Now, run 
 
 ```bash
