@@ -5,7 +5,7 @@ export const register = (app: express.Application) => {
     /* /usergroup endpoint */
     
     // Get method
-    app.get('/api/v1/usergroups', (req: any, res) => {
+    app.get('/api/v1/usergroup', (req: any, res) => {
         db.connection.query('SELECT * FROM UserGroup', (error, results, fields) => {
             if (error) {
                 return res.sendStatus(500);
@@ -17,7 +17,7 @@ export const register = (app: express.Application) => {
     });
 
     // Post method
-    app.post('/api/v1/usergroups', (req: any, res) => {
+    app.post('/api/v1/usergroup', (req: any, res) => {
         let title = req.query.title;
         let descrip = req.query.descrip;
 
