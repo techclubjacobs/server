@@ -21,7 +21,7 @@ export const register = (app: express.Application) => {
         let title = req.query.title;
         let descrip = req.query.descrip;
 
-        if (!title || ! descrip) {
+        if (!title || !descrip) {
             return res.sendStatus(400);
         }
         else {
@@ -155,7 +155,7 @@ export const register = (app: express.Application) => {
         }
         else {
             let mysql = `DELETE FROM UserGroupMembership 
-                WHERE user_id = '${user_id}', usergroup_id = '${ugid}'`;
+                WHERE user_id = '${user_id}' AND usergroup_id = '${ugid}'`;
 
             db.connection.query(mysql, (error, results, fields) => {
                 if (error) {
@@ -221,7 +221,7 @@ export const register = (app: express.Application) => {
         }
         else {
             let mysql = `DELETE FROM UserGroupOwner 
-                WHERE user_id = '${user_id}', usergroup_id = '${ugid}'`;
+                WHERE user_id = '${user_id}' AND usergroup_id = '${ugid}'`;
 
             db.connection.query(mysql, (error, results, fields) => {
                 if (error) {
@@ -288,7 +288,7 @@ export const register = (app: express.Application) => {
         }
         else {
             let mysql = `DELETE FROM UserGroupInvite 
-                WHERE user_id = '${invite_id}', usergroup_id = '${ugid}'`;
+                WHERE invite_id = '${invite_id}' AND usergroup_id = '${ugid}'`;
 
             db.connection.query(mysql, (error, results, fields) => {
                 if (error) {
@@ -332,8 +332,8 @@ export const register = (app: express.Application) => {
             return res.sendStatus(400);
         }
         else {
-            let mysql = `INSERT INTO GroupRequested
-                VALUES('${require}', '${ugid}')`;
+            let mysql = `INSERT INTO GroupRequest
+                VALUES('${request_id}', '${ugid}')`;
             
             db.connection.query(mysql, (error, results, fields) => {
                 if (error) {
@@ -355,8 +355,8 @@ export const register = (app: express.Application) => {
             return res.sendStatus(400);
         }
         else {
-            let mysql = `DELETE FROM GroupRequested
-                WHERE request_id = '${request_id}', usergroup_id = '${ugid}' `;
+            let mysql = `DELETE FROM GroupRequest
+                WHERE request_id = '${request_id}' AND usergroup_id = '${ugid}' `;
             db.connection.query(mysql, (error, results, fields) => {
                 if (error) {
                     return res.sendStatus(500);
