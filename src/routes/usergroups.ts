@@ -5,6 +5,7 @@ export const register = (app: express.Application) => {
     /* /usergroup endpoint */
     
     // Get method
+    // get a list of all usergroups
     app.get('/api/v1/usergroup', (req: any, res) => {
         db.connection.query('SELECT * FROM UserGroup', (error, results, fields) => {
             if (error) {
@@ -17,16 +18,20 @@ export const register = (app: express.Application) => {
     });
 
     // Post method
+    // create a new usergroup
     app.post('/api/v1/usergroup', (req: any, res) => {
         let title = req.query.title;
         let descrip = req.query.descrip;
+        // it is not required to have a max capacity, because
+        // by default is NULL
+        let max_capacity = req.query.max_capacity; 
 
-        if (!title || !descrip) {
+        if (!title || !descrip || !max_capacity) {
             return res.sendStatus(400);
         }
         else {
-            let sql = `INSERT INTO UserGroup (title, descrip) VALUES 
-                ('${title}', '${descrip}')`; 
+            let sql = `INSERT INTO UserGroup (title, max_capacity, descrip) 
+                VALUES('${title}', '${max_capacity}', '${descrip}')`; 
             db.connection.query(sql, (error, results, fields) => {
                 if (error) {
                     return res.sendStatus(500);
@@ -40,7 +45,8 @@ export const register = (app: express.Application) => {
 
     /* /usergroup/:ugid */
 
-    // Get method (Get specific UserGroup)
+    // Get method 
+    // Get specific UserGroup
     app.get('/api/v1/usergroup/:ugid', (req: any, res) => {
         let ugid = req.params.ugid;
         if (!ugid) {
@@ -63,13 +69,15 @@ export const register = (app: express.Application) => {
     app.put('/api/v1/usergroup/:ugid', (req: any, res) => {
         let ugid = req.params.ugid;
         let title = req.query.title;
+        let max_capacity = req.query.max_capacity;
         let descrip = req.query.descrip;
 
-        if (!ugid || !title || !descrip) {
+        if (!ugid || !title || !descrip || !max_capacity) {
             return res.sendStatus(400);
         }
         else {
-            let sql = `UPDATE UserGroup SET title = '${title}', descrip = '${descrip}'
+            let sql = `UPDATE UserGroup 
+                SET title = '${title}', max_capacity = '${max_capacity}',descrip = '${descrip}'
                 WHERE usergroup_id = '${ugid}' `;
             
             db.connection.query(sql, (error, results, fields) => {
