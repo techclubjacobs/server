@@ -20,13 +20,16 @@ export const register = (app: Application) => {
     app.post('/api/v1/usergroup', (req: Request, res: Response) => {
         let title = req.query.title;
         let descrip = req.query.descrip;
+        // it is not required to have a max capacity, because
+        // by default is NULL
+        let max_capacity = req.query.max_capacity; 
 
-        if (!title || !descrip) {
+        if (!title || !descrip || !max_capacity) {
             return res.sendStatus(400);
         }
         else {
-            let sql = `INSERT INTO UserGroup (title, descrip) VALUES 
-                ('${title}', '${descrip}')`; 
+            let sql = `INSERT INTO UserGroup (title, max_capacity, descrip) 
+                VALUES('${title}', '${max_capacity}', '${descrip}')`; 
             db.connection.query(sql, (error, results, fields) => {
                 if (error) {
                     return res.sendStatus(500);
@@ -63,13 +66,15 @@ export const register = (app: Application) => {
     app.put('/api/v1/usergroup/:ugid', (req: Request, res: Response) => {
         let ugid = req.params.ugid;
         let title = req.query.title;
+        let max_capacity = req.query.max_capacity;
         let descrip = req.query.descrip;
 
-        if (!ugid || !title || !descrip) {
+        if (!ugid || !title || !descrip || !max_capacity) {
             return res.sendStatus(400);
         }
         else {
-            let sql = `UPDATE UserGroup SET title = '${title}', descrip = '${descrip}'
+            let sql = `UPDATE UserGroup 
+                SET title = '${title}', max_capacity = '${max_capacity}',descrip = '${descrip}'
                 WHERE usergroup_id = '${ugid}' `;
             
             db.connection.query(sql, (error, results, fields) => {
