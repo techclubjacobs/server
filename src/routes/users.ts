@@ -1,9 +1,9 @@
-import * as express from "express";
 import * as db from '../tools/db';
+import { Application, Response, Request } from "express";
 
-export const register = (app: express.Application) => {
+export const register = (app: Application) => {
 
-    app.get('/api/v1/users', (req: any, res) => {
+    app.get('/api/v1/users', (req: Request, res: Response) => {
         db.connection.query('select * from User;', (err, rows) => {
             if (err) {
                 res.sendStatus(500);
@@ -13,7 +13,7 @@ export const register = (app: express.Application) => {
         });
     });
 
-    app.post('/api/v1/users', (req: any, res) => {
+    app.post('/api/v1/users', (req: Request, res: Response) => {
         // Need: firstname, lastname, email
         if (!req.query.firstname || !req.query.lastname || !req.query.email) {
             res.sendStatus(400);
@@ -34,7 +34,7 @@ export const register = (app: express.Application) => {
         }
     });
 
-    app.get('/api/v1/users/:userid', (req: any, res) => {
+    app.get('/api/v1/users/:userid', (req: Request, res: Response) => {
         db.connection.query(`select * from User where User.user_id = ${req.params.userid};`, (err, rows) => {
             if (err) {
                 res.sendStatus(500);
