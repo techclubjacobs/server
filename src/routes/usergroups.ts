@@ -17,22 +17,50 @@ export const register = (app: Application) => {
     // Post method
     app.post('/api/v1/usergroup', (req: Request, res: Response) => {
         let title = req.query.title;
+        // optional
         let descrip = req.query.descrip;
-        // it is not required to have a max capacity, because
-        // by default is NULL
         let max_capacity = req.query.max_capacity; 
 
-        if (!title || !descrip || !max_capacity) {
+        if (!title) {
             return res.sendStatus(400);
         }
 
-        let sql = `INSERT INTO UserGroup (title, max_capacity, descrip) VALUES(?, ?, ?)`; 
-        db.connection.query(sql, [title, max_capacity,descrip], (error, results, fields) => {
-            if (error) {
-                return res.sendStatus(500);
-            }
-            return res.sendStatus(200);
-        });
+        if (!max_capacity && !descrip) {
+            let sql = `INSERT INTO UserGroup (title) VALUES(?)`; 
+            db.connection.query(sql, [title], (error, results, fields) => {
+                if (error) {
+                    return res.sendStatus(500);
+                }
+                return res.sendStatus(200);
+            });
+        }
+        else if (!max_capacity) {
+            let sql = `INSERT INTO UserGroup (title, descrip) VALUES(?, ?)`; 
+            db.connection.query(sql, [title, descrip], (error, results, fields) => {
+                if (error) {
+                    return res.sendStatus(500);
+                }
+                return res.sendStatus(200);
+            });
+        }
+        else if (!descrip) {
+            let sql = `INSERT INTO UserGroup (title, max_capacity) VALUES(?, ?)`; 
+            db.connection.query(sql, [title, max_capacity], (error, results, fields) => {
+                if (error) {
+                    return res.sendStatus(500);
+                }
+                return res.sendStatus(200);
+            });
+        }
+        else {
+            let sql = `INSERT INTO UserGroup (title, max_capacity, descrip) VALUES(?, ?, ?)`; 
+            db.connection.query(sql, [title, max_capacity, descrip], (error, results, fields) => {
+                if (error) {
+                    return res.sendStatus(500);
+                }
+                return res.sendStatus(200);
+            });
+        }
     });
 
     /* /usergroup/:ugid */
@@ -60,15 +88,15 @@ export const register = (app: Application) => {
         let max_capacity = req.query.max_capacity;
         let descrip = req.query.descrip;
 
-        if (!ugid || !title || !descrip || !max_capacity) {
+        if (!ugid || !title || !max_capacity || !descrip) {
             return res.sendStatus(400);
         }
-
+        
         let sql = `UPDATE UserGroup 
             SET title = ?, max_capacity = ?, descrip = ?
-            WHERE usergroup_id = '${ugid}' `;
+            WHERE usergroup_id = ? `;
         
-        db.connection.query(sql, [title, max_capacity, descrip], (error, results, fields) => {
+        db.connection.query(sql, [title, max_capacity, descrip, ugid], (error, results, fields) => {
             if (error) {
                 return res.sendStatus(500);
             }
@@ -100,6 +128,7 @@ export const register = (app: Application) => {
         if (!ugid) {
             return res.sendStatus(400);
         }
+        
         let mysql = `SELECT * FROM UserGroupMembership 
             WHERE usergroup_id = ?`;
         db.connection.query(mysql, [ugid], (error, results, fields) => {
