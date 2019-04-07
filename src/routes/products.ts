@@ -52,12 +52,13 @@ export const register = (app: express.Application) => {
     });
 
     app.post('api/v1/products/:product_id/chats', (request, response) => {
-        if (!request.params.product_id || !request.params.buyer_id || !request.params.seller_id)
+        //Need: product_id, buyer_id, seller_id
+        if (!request.params.product_id || !request.params.user_id || !request.params.seller_id)
             response.sendStatus(400);
         else{
             db.connection.query(`INSERT INTO Chat (product_id, buyer_id, seller_id) values
-            ('?','?','?')` ,[request.params.product_id, request.params.buyer_id,request.params.seller_id], (err, res) => {
-                if (err) throw err;
+            ('?','?','?')` ,[request.params.product_id, request.params.user_id,request.params.seller_id], (err, res) => {
+                if (err) response.sendStatus(500);
                 response.sendStatus(201);
             });
         }
