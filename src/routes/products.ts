@@ -2,14 +2,14 @@ import * as express from "express";
 import * as db from '../tools/db';
 
 export const register = (app: express.Application) => {
-    app.get('api/v1/products', (request, response) => {
+    app.get('/api/v1/products', (request: any, response) => {
         db.connection.query('SELECT * FROM `Product` WHERE 1;', (err, res) => {
-            if (err) throw err;
+            if (err) response.sendStatus(500);
             response.send(res);
         });
     });
 
-    app.post('api/v1/products', (request, response) => {
+    app.post('/api/v1/products', (request, response) => {
         //Need: Title, price
         if (!request.query.title || !request.query.price || !request.params.evcat_id || !request.params.user_id){
             response.sendStatus(400);
@@ -23,35 +23,35 @@ export const register = (app: express.Application) => {
         }
     });
 
-    app.get('api/v1/products/:product_id', (request, response)=> {
+    app.get('/api/v1/products/:product_id', (request, response)=> {
         db.connection.query(`SELECT * FROM Product WHERE product_id = ?`, [request.params.product_id], (err, res) => {
             if (err) response.sendStatus(500);
             response.send(res);
         });
     });
 
-    app.put('api/v1/products/:product_id', (request, response) => {
+    app.put('/api/v1/products/:product_id', (request, response) => {
         db.connection.query(`UPDATE Product SET ? WHERE product_id = ?`, [request.body, request.params.product_id], (err, res) => {
             if (err) response.sendStatus(500);
             response.sendStatus(200);
         });
     });
 
-    app.delete('api/v1/products/:product_id', (request, response) =>{
+    app.delete('/api/v1/products/:product_id', (request, response) =>{
         db.connection.query(`DELETE FROM Product WHERE product_id = ?`, [request.params.product_id], (err, res) => {
             if (err) response.sendStatus(500);
             response.sendStatus(200);
         });
     });
 
-    app.get('api/v1/products/:product_id/chats', (request, response) =>{
+    app.get('/api/v1/products/:product_id/chats', (request, response) =>{
         db.connection.query(`SELECT * FROM Chat WHERE product_id = ?`, [request.params.product_id], (err, res) => {
             if (err) response.sendStatus(500);
             response.send(res);
         });
     });
 
-    app.post('api/v1/products/:product_id/chats', (request, response) => {
+    app.post('/api/v1/products/:product_id/chats', (request, response) => {
         //Need: product_id, buyer_id, seller_id
         if (!request.params.product_id || !request.params.user_id || !request.params.seller_id)
             response.sendStatus(400);
