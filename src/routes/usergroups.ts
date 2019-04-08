@@ -100,9 +100,9 @@ export const register = (app: Application) => {
         if (!ugid) {
             return res.sendStatus(400);
         }
-        let mysql = `SELECT * FROM UserGroupMembership 
+        let sql = `SELECT user_id FROM UserGroupMembership 
             WHERE usergroup_id = ?`;
-        db.connection.query(mysql, [ugid], (error, results, fields) => {
+        db.connection.query(sql, [ugid], (error, results, fields) => {
             if (error) {
                 return res.sendStatus(500);
             }
@@ -118,8 +118,8 @@ export const register = (app: Application) => {
         if (!ugid || !user_id) {
             return res.sendStatus(400);
         }
-        let mysql = `INSERT INTO UserGroupMembership VALUES(?, ?)`;
-        db.connection.query(mysql, [user_id, ugid], (error, results, fields) => {
+        let sql = `INSERT INTO UserGroupMembership VALUES(?, ?)`;
+        db.connection.query(sql, [user_id, ugid], (error, results, fields) => {
             if (error) {
                 return res.sendStatus(500);
             }
@@ -136,9 +136,9 @@ export const register = (app: Application) => {
             return res.sendStatus(400);
         }
 
-        let mysql = `DELETE FROM UserGroupMembership 
+        let sql = `DELETE FROM UserGroupMembership 
             WHERE user_id = ? AND usergroup_id = ?`;
-        db.connection.query(mysql, [user_id, ugid], (error, results, fields) => {
+        db.connection.query(sql, [user_id, ugid], (error, results, fields) => {
             if (error) {
                 return res.sendStatus(500);
             } 
@@ -155,9 +155,9 @@ export const register = (app: Application) => {
             return res.sendStatus(400);
         }
 
-        let mysql = `SELECT * FROM UserGroupOwner 
+        let sql = `SELECT user_id FROM UserGroupOwner 
             WHERE usergroup_id = ?`;
-        db.connection.query(mysql, [ugid], (error, results, fields) => {
+        db.connection.query(sql, [ugid], (error, results, fields) => {
             if (error) {
                 return res.sendStatus(500);
             }
@@ -174,8 +174,8 @@ export const register = (app: Application) => {
             return res.sendStatus(400);
         }
 
-        let mysql = `INSERT INTO UserGroupOwner VALUES(?, ?)`;
-        db.connection.query(mysql, [user_id, ugid], (error, results, fields) => {
+        let sql = `INSERT INTO UserGroupOwner VALUES(?, ?)`;
+        db.connection.query(sql, [user_id, ugid], (error, results, fields) => {
             if (error) {
                 return res.sendStatus(500);
             }
@@ -191,9 +191,9 @@ export const register = (app: Application) => {
         if (!ugid || !user_id) {
             return res.sendStatus(400);
         }
-        let mysql = `DELETE FROM UserGroupOwner 
+        let sql = `DELETE FROM UserGroupOwner 
             WHERE user_id = ? AND usergroup_id = ?`;
-        db.connection.query(mysql, [user_id, ugid], (error, results, fields) => {
+        db.connection.query(sql, [user_id, ugid], (error, results, fields) => {
             if (error) {
                 return res.sendStatus(500);
             } 
@@ -210,9 +210,12 @@ export const register = (app: Application) => {
         if (!ugid) {
             return res.sendStatus(400);
         }
-        let mysql = `SELECT * FROM UserGroupInvite 
-            WHERE usergroup_id = ?`;
-        db.connection.query(mysql, [ugid], (error, results, fields) => {
+
+        let sql = `SELECT Invite.user_id FROM Invite
+            INNER JOIN UserGroupInvite ON Invite.invite_id = UserGroupInvite.invite_id
+            WHERE UserGroupInvite.usergroup_id = ?`;
+        
+        db.connection.query(sql, [ugid], (error, results, fields) => {
             if (error) {
                 return res.sendStatus(500);
             }
@@ -223,14 +226,17 @@ export const register = (app: Application) => {
     // Post method (invite new user to an usergroup)
     app.post('/api/v1/usergroup/:ugid/invited', (req: Request, res: Response) => {
         let ugid = req.params.ugid;
-        let invite_id = req.query.invite_id;
+        // let invite_id = req.query.invite_id;
+        let user_id = req.query.user_id;
 
-        if (!ugid || !invite_id) {
+        if (!ugid || !user_id) {
             return res.sendStatus(400);
         }
 
-        let mysql = `INSERT INTO UserGroupInvite VALUES(?, ?)`;
-        db.connection.query(mysql, [invite_id, ugid], (error, results, fields) => {
+        let sql = `INSERT INTO UserGroupInvite (invite_id, usergroup_id)
+            SELECT Invite.invite_id, ? FROM Invite WHERE user_id = ?`;
+
+        db.connection.query(sql, [ugid, user_id], (error, results, fields) => {
             if (error) {
                 return res.sendStatus(500);
             }
@@ -247,9 +253,9 @@ export const register = (app: Application) => {
             return res.sendStatus(400);
         }
 
-        let mysql = `DELETE FROM UserGroupInvite 
+        let sql = `DELETE FROM UserGroupInvite 
             WHERE invite_id = ? AND usergroup_id = ?`;
-        db.connection.query(mysql, [invite_id, ugid], (error, results, fields) => {
+        db.connection.query(sql, [invite_id, ugid], (error, results, fields) => {
             if (error) {
                 return res.sendStatus(500);
             } 
@@ -266,9 +272,11 @@ export const register = (app: Application) => {
             return res.sendStatus(400);
         }
 
-        let mysql = `SELECT * FROM GroupRequest 
-            WHERE usergroup_id = ? `;
-        db.connection.query(mysql, [ugid], (error, results, fields) => {
+        let sql = `SELECT Request.user_id FROM Request
+            INNER JOIN GroupRequest ON GroupRequest.request_id = Request.request_id
+            WHERE GroupRequest.usergroup_id = ?`;
+
+        db.connection.query(sql, [ugid], (error, results, fields) => {
             if (error) {
                 return res.sendStatus(500);
             }
@@ -285,8 +293,8 @@ export const register = (app: Application) => {
             return res.sendStatus(400);
         }
 
-        let mysql = `INSERT INTO GroupRequest VALUES(?, ?)`;
-        db.connection.query(mysql, [request_id, ugid], (error, results, fields) => {
+        let sql = `INSERT INTO GroupRequest VALUES(?, ?)`;
+        db.connection.query(sql, [request_id, ugid], (error, results, fields) => {
             if (error) {
                 return res.sendStatus(500);
             }
@@ -303,9 +311,9 @@ export const register = (app: Application) => {
             return res.sendStatus(400);
         }
 
-        let mysql = `DELETE FROM GroupRequest
+        let sql = `DELETE FROM GroupRequest
             WHERE request_id = ? AND usergroup_id = ? `;
-        db.connection.query(mysql, [request_id, ugid], (error, results, fields) => {
+        db.connection.query(sql, [request_id, ugid], (error, results, fields) => {
             if (error) {
                 return res.sendStatus(500);
             }
