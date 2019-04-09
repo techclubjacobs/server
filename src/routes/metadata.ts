@@ -7,7 +7,7 @@ export const register = (app: express.Application) => {
 
     //GET ProductCategories
     app.get('/api/v1/prodcats',(req, res) =>{
-        db.connection.query('SELECT * from ProductCategory;',(error,results)=>{
+        db.connection.query('SELECT * from ProductCategory;', (error, results) => {
             if (error){
                 return res.sendStatus(200);
             }
