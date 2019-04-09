@@ -17,7 +17,7 @@ export const register = (app: express.Application) => {
 
     //GET EventCategories
     app.get('/api/v1/evcats',(req: express.Request, res: express.Response) => {
-        db.connection.query('SELECT * from EventCategory;', (error,results) => {
+        db.connection.query('SELECT * from EventCategory;', (error, results) => {
             if (error){
                 return res.sendStatus(200);
             }
@@ -27,7 +27,7 @@ export const register = (app: express.Application) => {
 
     //GET Locations
     app.get('/api/v1/locations',(req: express.Request, res: express.Response) => {
-        db.connection.query('SELECT * from Location;', (error,results) => {
+        db.connection.query('SELECT * from Location;', (error, results) => {
             if (error){
                 return res.sendStatus(200);
             }
