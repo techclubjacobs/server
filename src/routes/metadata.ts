@@ -6,7 +6,7 @@ import * as db from '../tools/db';
 export const register = (app: express.Application) => {
 
     //GET ProductCategories
-    app.get('/api/v1/prodcats',(req, res) =>{
+    app.get('/api/v1/prodcast',(req: Request, res: Response) => {
         db.connection.query('SELECT * from ProductCategory;', (error, results) => {
             if (error){
                 return res.sendStatus(200);
