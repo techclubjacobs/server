@@ -6,7 +6,7 @@ import * as db from '../tools/db';
 export const register = (app: express.Application) => {
 
     //GET ProductCategories
-    app.get('/api/v1/prodcast',(req: Request, res: Response) => {
+    app.get('/api/v1/prodcats',(req: express.Request, res: express.Response) => {
         db.connection.query('SELECT * from ProductCategory;', (error, results) => {
             if (error){
                 return res.sendStatus(200);
@@ -16,8 +16,8 @@ export const register = (app: express.Application) => {
     });
 
     //GET EventCategories
-    app.get('/api/v1/evcats',(req, res) => {
-        db.connection.query('SELECT * from EventCategory;',(error,results)=>{
+    app.get('/api/v1/evcats',(req: express.Request, res: express.Response) => {
+        db.connection.query('SELECT * from EventCategory;', (error,results) => {
             if (error){
                 return res.sendStatus(200);
             }
@@ -26,8 +26,8 @@ export const register = (app: express.Application) => {
     });
 
     //GET Locations
-    app.get('/api/v1/locations',(req,res) =>{
-        db.connection.query('SELECT * from Location;' ,(error,results)=>{
+    app.get('/api/v1/locations',(req: express.Request, res: express.Response) => {
+        db.connection.query('SELECT * from Location;', (error,results) => {
             if (error){
                 return res.sendStatus(200);
             }
