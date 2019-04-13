@@ -59,6 +59,11 @@ export const register = (app: Application) => {
 
     // PUT Method (Update Existing UserGroup)
     app.put('/api/v1/usergroup/:ugid', (req: Request, res: Response) => {
+        // restrict PUT (only admin or own user)
+        if (req.body.key != '5736ac861c2e50e0a2223dab84502a7e08bd904d'){
+            return res.sendStatus(401).send('You shall not pass');
+        }
+
         const ugid = req.params.ugid;
         const title = req.body.title;
         const max_capacity = req.body.max_capacity;
@@ -82,6 +87,11 @@ export const register = (app: Application) => {
 
     // Delete Method (Remove user group)
     app.delete('/api/v1/usergroup/:ugid', (req: Request, res: Response) => {
+        // restrict DELETE (only admin or own user)
+        if (req.body.key != '5736ac861c2e50e0a2223dab84502a7e08bd904d'){
+            return res.sendStatus(401).send('You shall not pass');
+        }
+
         const ugid = req.params.ugid;
         if (!ugid) {
             return res.sendStatus(400);
