@@ -10,17 +10,19 @@ export const register = (app: Application) => {
             if (error) {
                 return res.sendStatus(500);
             }
-            return res.send(results);
+            return res.send({
+                "usergroups": results
+            });
         });
     });
 
     // Post method
     app.post('/api/v1/usergroup', (req: Request, res: Response) => {
-        const title = req.query.title;
-        const descrip = req.query.descrip;
+        const title = req.body.title;
+        const descrip = req.body.descrip;
         // it is not required to have a max capacity, because
         // by default is NULL
-        const max_capacity = req.query.max_capacity;
+        const max_capacity = req.body.max_capacity;
 
         if (!title || !descrip || !max_capacity) {
             return res.sendStatus(400);
@@ -31,7 +33,7 @@ export const register = (app: Application) => {
             if (error) {
                 return res.sendStatus(500);
             }
-            return res.sendStatus(200);
+            return res.sendStatus(201);
         });
     });
 
@@ -49,16 +51,18 @@ export const register = (app: Application) => {
             if (error) {
                 return res.sendStatus(500);
             }
-            return res.send(results);
+            return res.send({
+                "usergroup": results
+            });
         });
     });
 
     // PUT Method (Update Existing UserGroup)
     app.put('/api/v1/usergroup/:ugid', (req: Request, res: Response) => {
         const ugid = req.params.ugid;
-        const title = req.query.title;
-        const max_capacity = req.query.max_capacity;
-        const descrip = req.query.descrip;
+        const title = req.body.title;
+        const max_capacity = req.body.max_capacity;
+        const descrip = req.body.descrip;
 
         if (!ugid || !title || !descrip || !max_capacity) {
             return res.sendStatus(400);
@@ -66,9 +70,9 @@ export const register = (app: Application) => {
 
         const sql = `UPDATE UserGroup
             SET title = ?, max_capacity = ?, descrip = ?
-            WHERE usergroup_id = '${ugid}' `;
+            WHERE usergroup_id = ? `;
 
-        db.connection.query(sql, [title, max_capacity, descrip], (error, results, fields) => {
+        db.connection.query(sql, [title, max_capacity, descrip, ugid], (error, results, fields) => {
             if (error) {
                 return res.sendStatus(500);
             }
@@ -106,14 +110,16 @@ export const register = (app: Application) => {
             if (error) {
                 return res.sendStatus(500);
             }
-            return res.send(results);
+            return res.send({
+                "members": results
+            });
         });
     });
 
     // Post method (add new member to the usergroup)
     app.post('/api/v1/usergroup/:ugid/members', (req: Request, res: Response) => {
         const ugid = req.params.ugid;
-        const user_id = req.query.user_id;
+        const user_id = req.body.user_id;
 
         if (!ugid || !user_id) {
             return res.sendStatus(400);
@@ -123,7 +129,7 @@ export const register = (app: Application) => {
             if (error) {
                 return res.sendStatus(500);
             }
-            return res.sendStatus(200);
+            return res.sendStatus(201);
         });
     });
 
@@ -161,14 +167,16 @@ export const register = (app: Application) => {
             if (error) {
                 return res.sendStatus(500);
             }
-            return res.send(results);
+            return res.send({
+                "owners": results
+            });
         });
     });
 
     // Post method (add new owner to the usergroup)
     app.post('/api/v1/usergroup/:ugid/owners', (req: Request, res: Response) => {
         const ugid = req.params.ugid;
-        const user_id = req.query.user_id;
+        const user_id = req.body.user_id;
 
         if (!ugid || !user_id) {
             return res.sendStatus(400);
@@ -179,7 +187,7 @@ export const register = (app: Application) => {
             if (error) {
                 return res.sendStatus(500);
             }
-            return res.sendStatus(200);
+            return res.sendStatus(201);
         });
     });
 
@@ -219,7 +227,9 @@ export const register = (app: Application) => {
             if (error) {
                 return res.sendStatus(500);
             }
-            return res.send(results);
+            return res.send({
+                "invited": results
+            });
         });
     });
 
@@ -227,7 +237,7 @@ export const register = (app: Application) => {
     app.post('/api/v1/usergroup/:ugid/invited', (req: Request, res: Response) => {
         const ugid = req.params.ugid;
         // let invite_id = req.query.invite_id;
-        const user_id = req.query.user_id;
+        const user_id = req.body.user_id;
 
         if (!ugid || !user_id) {
             return res.sendStatus(400);
@@ -240,7 +250,7 @@ export const register = (app: Application) => {
             if (error) {
                 return res.sendStatus(500);
             }
-            return res.sendStatus(200);
+            return res.sendStatus(201);
         });
     });
 
@@ -280,14 +290,16 @@ export const register = (app: Application) => {
             if (error) {
                 return res.sendStatus(500);
             }
-            return res.send(results);
+            return res.send({
+                "requested": results
+            });
         });
     });
 
     // Post method (add a new request to join an usergroup)
     app.post('/api/v1/usergroup/:ugid/requested', (req: Request, res: Response) => {
         const ugid = req.params.ugid;
-        const requestid = req.query.request_id;
+        const requestid = req.body.request_id;
 
         if (!ugid || !requestid) {
             return res.sendStatus(400);
@@ -298,7 +310,7 @@ export const register = (app: Application) => {
             if (error) {
                 return res.sendStatus(500);
             }
-            return res.sendStatus(200);
+            return res.sendStatus(201);
         });
     });
 
