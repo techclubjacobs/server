@@ -1,17 +1,10 @@
 import * as db from '../tools/db';
-import { Application, Response, Request, NextFunction } from "express";
-// import * as queryParser from "query-parser"
+import { Application, Response, Request } from "express";
+//import { json } from 'body-parser';
 
 export const register = (app: Application) => {
-    // use JSON from parser middleware
-    /*app.use(queryParser.json());
-    // use Query String Parser middleware
-    app.use(queryParser.urlencoded({
-        extended: false
-    }));  */
-
     //Global variable
-    let states = ["accepted", "rejected", "interested"];
+    const states = ["accepted", "rejected", "interested"];
 
     function isEmpty(obj: any) {
         for(var key in obj) {
@@ -28,32 +21,34 @@ export const register = (app: Application) => {
         db.connection.query('SELECT * FROM User', (error, results, fields) => {
             if (error) {
                 return res.sendStatus(500);
-            } 
-            return res.send(results);
+            }
+            return res.send({
+                "users": results
+            });
         });
     });
 
     // Post method (create a new user)
     app.post('/api/v1/users', (req: Request, res: Response) => {
         // Need: firstname, lastname, email
-        let firstname = req.query.first_name;
-        let lastname = req.query.last_name;
-        let email = req.query.email;
+        const firstname = req.body.first_name;
+        const lastname = req.body.last_name;
+        const email = req.body.email;
         
         if (!firstname || !lastname || !email) {
             return res.sendStatus(400);
         }
 
-        let now = new Date().toISOString().slice(0, 19).replace('T', ' ');
-        let sql = `INSERT INTO User (first_name, last_name, email, activated, joined) 
+        const now = new Date().toISOString().slice(0, 19).replace('T', ' ');
+        const sql = `INSERT INTO User (first_name, last_name, email, activated, joined) 
             VALUES (?, ?, ?, ?, ?);`
     
-        let data = [firstname, lastname, email, 1, now];    
+        const data = [firstname, lastname, email, 1, now];    
         db.connection.query(sql, data, (error, results, fields) => {
             if (error) {
                 return res.sendStatus(500);
             }
-            return res.sendStatus(200);
+            return res.sendStatus(201);
         });
     });
 
@@ -61,33 +56,35 @@ export const register = (app: Application) => {
 
     // Get method (get specific user)
     app.get('/api/v1/users/:uid', (req: Request, res: Response) => {
-        let uid = req.params.uid;
+        const uid = req.params.uid;
         if (!uid) {
             return res.sendStatus(400);
         }
 
-        let sql = `SELECT * FROM User WHERE user_id = ?`;
+        const sql = `SELECT * FROM User WHERE user_id = ?`;
         db.connection.query(sql, [uid], (error, results, fields) => {
             if (error) {
                 return res.sendStatus(500);
             }
-            return res.send(results);
+            return res.send({
+                "user": results[0]
+            });
         });
     });
 
     // Put method (update user profile)
-    app.put('/api/v1/users/:uid', (req: Request, res: Response, next: NextFunction) => {
+    app.put('/api/v1/users/:uid', (req: Request, res: Response) => {
         // middleware
-        // restrict PUT (only admin or own user), don't allow DELETE
-        if (req.query.key != '5736ac861c2e50e0a2223dab84502a7e08bd904d'){
+        // restrict PUT (only admin or own user), don't allow delete
+        if (req.body.key != '5736ac861c2e50e0a2223dab84502a7e08bd904d') {
             return res.sendStatus(401).send('You shall not pass');
         }
 
-        let uid = req.params.uid;
+        const uid = req.params.uid;
         // at least one parameter is required, at most 3
-        let first_name = req.query.first_name;
-        let last_name = req.query.last_name;
-        let email = req.query.email;
+        const first_name = req.body.first_name;
+        const last_name = req.body.last_name;
+        const email = req.body.email;
 
         if (!uid || (!first_name && !last_name && !email)) {
             return res.sendStatus(400);
@@ -135,114 +132,117 @@ export const register = (app: Application) => {
 
     // Get method (get all of user's usergroups (filter by member, owner, invited, requested))
     app.get('/api/v1/users/:uid/usergroups', (req: Request, res: Response) => {
-        let uid = req.params.uid;
+        const uid = req.params.uid;
         // filter by parameters
-        let filter_by = req.query.filter_by;
+        const filter_by = req.body.filter_by;
         if (!uid) {
             return res.sendStatus(400);
         }
 
         if (filter_by === 'member') {
-            let sql = `SELECT * FROM UserGroup 
-                INNER JOIN UserGroupMembership ON 
+            const sql = `SELECT * FROM UserGroup
+                INNER JOIN UserGroupMembership ON
                 UserGroupMembership.usergroup_id = UserGroup.usergroup_id
                 WHERE UserGroupMembership.user_id = ?`;
-            
+           
             db.connection.query(sql, [uid], (error, results, fields) => {
                 if (error) {
                     return res.sendStatus(500);
                 }
-
                 // include links to each usergroup
                 for (let i = 0; i < Object.keys(results).length; i++) {
                     results[i]["usergroup_link"] = "http://localhost:3000/api/v1/usergroup/"
                         + results[i]["usergroup_id"];
                 }
-                return res.send(results);
+                return res.send({
+                    "member": results
+                });
             });
         }
         else if (filter_by === 'owner') {
-            let sql = `SELECT * FROM UserGroup 
-                INNER JOIN UserGroupOwner ON 
+            const sql = `SELECT * FROM UserGroup
+                INNER JOIN UserGroupOwner ON
                 UserGroupOwner.usergroup_id = UserGroup.usergroup_id
                 WHERE UserGroupOwner.user_id = ?`;
-
             db.connection.query(sql, [uid], (error, results, fields) => {
                 if (error) {
                     return res.sendStatus(500);
                 }
-
                 // include links to each usergroup
                 for (let i = 0; i < Object.keys(results).length; i++) {
                     results[i]["usergroup_link"] = "http://localhost:3000/api/v1/usergroup/"
                         + results[i]["usergroup_id"];
                 }
-                return res.send(results);
+                return res.send({
+                    "owner": results
+                });
             });
         }
         else if (filter_by === 'invited') {
-            let sql = `SELECT * FROM UserGroup 
-                INNER JOIN UserGroupInvite ON 
+            const sql = `SELECT * FROM UserGroup
+                INNER JOIN UserGroupInvite ON
                 UserGroupInvite.usergroup_id = UserGroup.usergroup_id
                 INNER JOIN Invite ON
                 Invite.invite_id = UserGroupInvite.invite_id
                 WHERE Invite.user_id = ?`;
-            
+           
             db.connection.query(sql, [uid],(error, results, fields) => {
                 if (error) {
                     return res.sendStatus(500);
                 }
-
                 // include links to each usergroup
                 for (let i = 0; i < Object.keys(results).length; i++) {
                     results[i]["usergroup_link"] = "http://localhost:3000/api/v1/usergroup/"
                         + results[i]["usergroup_id"];
                 }
-                return res.send(results);
+                return res.send({
+                    "invited": results
+                });
             });
         }
         else if (filter_by === 'requested') {
-            let sql = `SELECT * FROM UserGroup 
-                INNER JOIN GroupRequest ON 
+            const sql = `SELECT * FROM UserGroup
+                INNER JOIN GroupRequest ON
                 GroupRequest.usergroup_id = UserGroup.usergroup_id
                 INNER JOIN Request ON
                 Request.request_id = GroupRequest.request_id
                 WHERE Request.user_id = ?`;
-            
+           
             db.connection.query(sql, [uid], (error, results, fields) => {
                 if (error) {
                     return res.sendStatus(500);
                 }
-
                 // include links to each usergroup
                 for (let i = 0; i < Object.keys(results).length; i++) {
                     results[i]["usergroup_link"] = "http://localhost:3000/api/v1/usergroup/"
                         + results[i]["usergroup_id"];
                 }
-                return res.send(results);
+                return res.send({
+                    "requested": results
+                });
             });
         }
         else {
-            let sql = `
-                SELECT * FROM UserGroup 
-                INNER JOIN UserGroupOwner ON 
+            const sql = `
+                SELECT * FROM UserGroup
+                INNER JOIN UserGroupOwner ON
                 UserGroupOwner.usergroup_id = UserGroup.usergroup_id
                 WHERE UserGroupOwner.user_id = ?;
 
-                SELECT * FROM UserGroup 
-                INNER JOIN UserGroupMembership ON 
+                SELECT * FROM UserGroup
+                INNER JOIN UserGroupMembership ON
                 UserGroupMembership.usergroup_id = UserGroup.usergroup_id
                 WHERE UserGroupMembership.user_id = ?;
 
-                SELECT * FROM UserGroup 
-                INNER JOIN UserGroupInvite ON 
+                SELECT * FROM UserGroup
+                INNER JOIN UserGroupInvite ON
                 UserGroupInvite.usergroup_id = UserGroup.usergroup_id
                 INNER JOIN Invite ON
                 Invite.invite_id = UserGroupInvite.invite_id
                 WHERE Invite.user_id = ?;
 
-                SELECT * FROM UserGroup 
-                INNER JOIN GroupRequest ON 
+                SELECT * FROM UserGroup
+                INNER JOIN GroupRequest ON
                 GroupRequest.usergroup_id = UserGroup.usergroup_id
                 INNER JOIN Request ON
                 Request.request_id = GroupRequest.request_id
@@ -257,7 +257,12 @@ export const register = (app: Application) => {
                     results[i]["usergroup_link"] = "http://localhost:3000/api/v1/usergroup/"
                         + results[i]["usergroup_id"];
                 }
-                return res.send(results);
+                return res.send({
+                    "owner": results[0],
+                    "member": results[1],
+                    "invited": results[2],
+                    "requested": results[3] 
+                });
             });
         }
     });
@@ -266,13 +271,13 @@ export const register = (app: Application) => {
     
     // Get method (get user's specific usergroup)
     app.get('/api/v1/users/:uid/usergroups/:ugid', (req: Request, res: Response) => {
-        let uid = req.params.uid;
-        let ugid = req.params.ugid;
+        const uid = req.params.uid;
+        const ugid = req.params.ugid;
         if (!uid || !ugid) {
             return res.sendStatus(400);
         }
-
-        let sql = `SELECT * FROM UserGroup 
+        
+        const sql = `SELECT * FROM UserGroup 
             INNER JOIN UserGroupMembership ON 
             UserGroupMembership.usergroup_id = UserGroup.usergroup_id
             WHERE UserGroupMembership.user_id = ? AND UserGroupMembership.usergroup_id = ?`;
@@ -281,16 +286,22 @@ export const register = (app: Application) => {
             if (error) {
                 return res.sendStatus(500);
             }
-            return res.send(results);
+            // provide a link for a usergroup
+            results[0]["usergroup_link"] = "http://localhost:3000/api/v1/usergroup/"
+                        + `${ugid}`;
+
+            return res.send({
+                "usergroup": results
+            });
         });
     });
 
     // Put method (update user's status for usergroup (Invited, Requested, member))
     app.put('/api/v1/users/:uid/usergroups/:ugid', (req: Request, res: Response) => {
-        let uid = req.params.uid;
-        let ugid = req.params.ugid;
-        let status = req.query.status;
-        let value = req.query.value;
+        const uid = req.params.uid;
+        const ugid = req.params.ugid;
+        const status = req.body.status;
+        const value = req.body.value;
         if (!uid || !ugid || !status || !value) {
             return res.sendStatus(400);
         }
@@ -299,7 +310,7 @@ export const register = (app: Application) => {
             switch(value) {
                 case '1': {
                     // if admin accepted request 
-                    let sql = `
+                    const sql = `
                         INSERT INTO UserGroupMembership VALUES(?, ?);
 
                         UPDATE Request 
@@ -318,7 +329,7 @@ export const register = (app: Application) => {
                 }
                 case '2': {
                     // if admin declined request
-                    let sql = `
+                    const sql = `
                         SET FOREIGN_KEY_CHECKS = 0;
 
                         DELETE EventRequest, Request
@@ -347,7 +358,7 @@ export const register = (app: Application) => {
             switch(value) {
                 case '1': {
                     // if user accepted invitation 
-                    let sql = `
+                    const sql = `
                         INSERT INTO UserGroupMembership VALUES(?, ?);
 
                         UPDATE Invite 
@@ -366,7 +377,7 @@ export const register = (app: Application) => {
                 }
                 case '2': {
                     // if user rejected invitation
-                    let sql = `
+                    const sql = `
                         SET FOREIGN_KEY_CHECKS = 0;
 
                         DELETE EventInvite, Invite 
@@ -396,19 +407,19 @@ export const register = (app: Application) => {
         }
     });
 
-    // Delete method (delete user's usergroup)
-    app.delete('/api/v1/users/:uid/usergroups/:ugid', (req: Request, res: Response, next: NextFunction) => {
-        if (req.query.key != '5736ac861c2e50e0a2223dab84502a7e08bd904d'){
+    // delete method (delete user's usergroup)
+    app.delete('/api/v1/users/:uid/usergroups/:ugid', (req: Request, res: Response) => {
+        if (req.body.key != '5736ac861c2e50e0a2223dab84502a7e08bd904d'){
             return res.sendStatus(401).send('You shall not pass');
         }
         
-        let uid = req.params.uid;
-        let ugid = req.params.ugid;
+        const uid = req.params.uid;
+        const ugid = req.params.ugid;
         if (!uid || !ugid) {
             return res.sendStatus(400);
         }
 
-        let sql = `DELETE FROM UserGroupMembership 
+        const sql = `DELETE FROM UserGroupMembership 
         WHERE user_id = ? AND usergroup_id = ?`;
 
         db.connection.query(sql, [uid, ugid], (error, results, fields) => {
@@ -423,15 +434,14 @@ export const register = (app: Application) => {
 
     // Get method (get all of the user's events (filter by confirmed, requested, invited, organizing))
     app.get('/api/v1/users/:uid/events', (req: Request, res: Response) => {
-        let uid = req.params.uid;
-        let filter_by = req.query.filter_by;
+        const uid = req.params.uid;
+        const filter_by = req.body.filter_by;
         if (!uid) {
             return res.sendStatus(400);
         }
 
-        // search both in SingularAttendance and Recurring Attendance
         if (filter_by === 'confirmed') {
-            let sql = `(SELECT * FROM Event
+            const sql = `(SELECT * FROM Event
                 INNER JOIN SingularAttendance ON
                     SingularAttendance.event_id = Event.event_id
                 WHERE SingularAttendance.user_id = ?)
@@ -440,85 +450,93 @@ export const register = (app: Application) => {
                 INNER JOIN RecurringAttendance ON
                     RecurringAttendance.event_id = Event.event_id
                 WHERE RecurringAttendance.user_id = ?)`;
-            
+           
             db.connection.query(sql, [uid, uid], (error, results, fields) => {
                 if (error) {
                     return res.sendStatus(500);
                 }
-                
-                // include links to each usergroup
+               
+                // include links to each event
                 for (let i = 0; i < Object.keys(results).length; i++) {
                     results[i]["event_link"] = "http://localhost:3000/api/v1/events/"
                         + results[i]["event_id"];
                 }
-                return res.send(results);
+                return res.send({
+                    "confirmed": results
+                });
             });
         }
         else if (filter_by === 'requested') {
-            let sql = `SELECT * FROM Event 
-                INNER JOIN EventRequest ON 
+            const sql = `SELECT * FROM Event
+                INNER JOIN EventRequest ON
                     EventRequest.event_id = Event.event_id
                 INNER JOIN Request ON
                     Request.request_id = EventRequest.request_id  
                 WHERE Request.user_id = ?`;
-
+ 
             db.connection.query(sql, [uid], (error, results, fields) => {
                 if (error) {
                     return res.sendStatus(500);
                 }
-                // include links to each usergroup
+                // include links to each event
                 for (let i = 0; i < Object.keys(results).length; i++) {
                     results[i]["event_link"] = "http://localhost:3000/api/v1/events/"
                         + results[i]["event_id"];
                 }
-                return res.send(results);
+                return res.send({
+                    "requested": results
+                });
             });
         }
         else if (filter_by === 'invited') {
-            let sql = `SELECT * FROM Event 
-                INNER JOIN EventInvite ON 
+            const sql = `SELECT * FROM Event
+                INNER JOIN EventInvite ON
                     EventInvite.event_id = Event.event_id
                 INNER JOIN Invite ON
                     Invite.invite_id = EventInvite.invite_id  
                 WHERE Invite.user_id = ?`;
-
+ 
             db.connection.query(sql, [uid], (error, results, fields) => {
                 if (error) {
                     return res.sendStatus(500);
                 }
-                // include links to each usergroup
+                // include links to each event
                 for (let i = 0; i < Object.keys(results).length; i++) {
                     results[i]["event_link"] = "http://localhost:3000/api/v1/events/"
                         + results[i]["event_id"];
                 }
-                return res.send(results);
+                return res.send({
+                    "invited": results
+                });
             });
         }
         else if (filter_by === 'organizing') {
-            let sql = `SELECT * FROM Event
+            const sql = `SELECT * FROM Event
                 INNER JOIN Organizer ON
                     Organizer.event_id = Event.event_id
                 WHERE Organizer.user_id = ?`;
-            
+           
             db.connection.query(sql, [uid], (error, results, fields) => {
                 if (error) {
                     return res.sendStatus(500);
                 }
-                // include links to each usergroup
+                // include links to each event
                 for (let i = 0; i < Object.keys(results).length; i++) {
                     results[i]["event_link"] = "http://localhost:3000/api/v1/events/"
                         + results[i]["event_id"];
                 }
-                return res.send(results);
+                return res.send({
+                    "organizing": results
+                });
             });
         }
         else {
-            let sql = `
+            const sql = `
                 SELECT * FROM Event
                 INNER JOIN Organizer ON
                     Organizer.event_id = Event.event_id
                 WHERE Organizer.user_id = ?;
-
+ 
                 (SELECT * FROM Event
                 INNER JOIN SingularAttendance ON
                     SingularAttendance.event_id = Event.event_id
@@ -528,31 +546,36 @@ export const register = (app: Application) => {
                 INNER JOIN RecurringAttendance ON
                     RecurringAttendance.event_id = Event.event_id
                 WHERE RecurringAttendance.user_id = ?);
-
-                SELECT * FROM Event 
-                INNER JOIN EventInvite ON 
+ 
+                SELECT * FROM Event
+                INNER JOIN EventInvite ON
                     EventInvite.event_id = Event.event_id
                 INNER JOIN Invite ON
                     Invite.invite_id = EventInvite.invite_id  
                 WHERE Invite.user_id = ?;
-
-                SELECT * FROM Event 
-                INNER JOIN EventRequest ON 
+ 
+                SELECT * FROM Event
+                INNER JOIN EventRequest ON
                     EventRequest.event_id = Event.event_id
                 INNER JOIN Request ON
                     Request.request_id = EventRequest.request_id  
                 WHERE Request.user_id = ? `;
-            
+           
             db.connection.query(sql, [uid, uid, uid, uid, uid], (error, results, fields) => {
                 if (error) {
                     return res.sendStatus(500);
                 }
-                // include links to each usergroup
+                // include links to each event
                 for (let i = 0; i < Object.keys(results).length; i++) {
                     results[i]["event_link"] = "http://localhost:3000/api/v1/events/"
                         + results[i]["event_id"];
                 }
-                return res.send(results);
+                return res.send({
+                    "organizing": results[0],
+                    "confirmed": results[1],
+                    "invited": results[2],
+                    "requested": results[3]
+                });
             });
         }
     });
@@ -561,13 +584,13 @@ export const register = (app: Application) => {
 
     // Get method (get specific event (can be single or recurring single))
     app.get('/api/v1/users/:uid/events/:eid', (req: Request, res: Response) => {
-        let uid = req.params.uid;
-        let eid = req.params.eid;
+        const uid = req.params.uid;
+        const eid = req.params.eid;
         if (!uid || !eid) {
             return res.sendStatus(400);
         }
 
-        let sql = ` (SELECT * FROM Event
+        const sql = ` (SELECT * FROM Event
             INNER JOIN SingularAttendance ON
                 SingularAttendance.event_id = Event.event_id
             WHERE 
@@ -595,16 +618,20 @@ export const register = (app: Application) => {
             if (error) {
                 return res.sendStatus(500);
             }
-            return res.send(results);
+            return res.send({
+                "event": results[0][0],
+                "attend_OneTimeEvent": results[1][0],
+                "attend_RecurringEvent": results[2][0]
+            });
         });
     });
 
     // PUT Method (update user's status at event (Confirmed, Invited))
     app.put('/api/v1/users/:uid/events/:eid', (req: Request, res: Response) => {
-        let uid = req.params.uid;
-        let eid = req.params.eid;
-        let status = req.query.status;
-        let value = req.query.value;
+        const uid = req.params.uid;
+        const eid = req.params.eid;
+        const status = req.body.status;
+        const value = req.body.value;
         
         if (!uid || !eid || !status || !value) {
             return res.sendStatus(400);
@@ -614,7 +641,7 @@ export const register = (app: Application) => {
             switch(value) {
                 case '1': {
                     // if admin accepted request 
-                    let sql_check_1 = `SELECT * FROM OneTimeEvent
+                    const sql_check_1 = `SELECT * FROM OneTimeEvent
                         WHERE event_id = ?`;
                     db.connection.query(sql_check_1, [eid], (error, results, fields) => {
                         if (error) {
@@ -622,7 +649,7 @@ export const register = (app: Application) => {
                         }
                         
                         if (!isEmpty(results)) {
-                            let sql = `
+                            const sql = `
                                 INSERT INTO SingularAttendance VALUES(?, ?);
                                 UPDATE Request 
                                 INNER JOIN EventRequest ON 
@@ -639,7 +666,7 @@ export const register = (app: Application) => {
                         }
                     });
             
-                    let sql_check_2 = `SELECT * FROM RecurringEvent
+                    const sql_check_2 = `SELECT * FROM RecurringEvent
                         WHERE event_id = ?`;
                     db.connection.query(sql_check_2, [eid], (error, results, fields) => {
                         if (error) {
@@ -647,7 +674,7 @@ export const register = (app: Application) => {
                         }
                         
                         if (!isEmpty(results)) {
-                            let sql = `
+                            const sql = `
                                 INSERT INTO RecurringAttendance VALUES(?, ?);
                                 UPDATE Request 
                                 INNER JOIN EventRequest ON 
@@ -667,10 +694,10 @@ export const register = (app: Application) => {
                 }
                 case '2': {
                     // if admin declined request
-                    let sql = `
+                    const sql = `
                         SET FOREIGN_KEY_CHECKS = 0;
 
-                        DELETE EventRequest, Request
+                        delete EventRequest, Request
                         FROM EventRequest
                         INNER JOIN Request ON
                         Request.request_id = EventRequest.request_id
@@ -696,7 +723,7 @@ export const register = (app: Application) => {
             switch(value) {
                 case '1': {
                     // if admin accepted request 
-                    let sql_check_1 = `SELECT * FROM OneTimeEvent
+                    const sql_check_1 = `SELECT * FROM OneTimeEvent
                         WHERE event_id = ?`;
                     db.connection.query(sql_check_1, [eid], (error, results, fields) => {
                         if (error) {
@@ -704,7 +731,7 @@ export const register = (app: Application) => {
                         }
                         
                         if (!isEmpty(results)) {
-                            let sql = `
+                            const sql = `
                                 INSERT INTO SingularAttendance VALUES(?, ?);
                                 UPDATE Invite 
                                 INNER JOIN UserGroupInvite ON 
@@ -721,7 +748,7 @@ export const register = (app: Application) => {
                         }
                     });
             
-                    let sql_check_2 = `SELECT * FROM RecurringEvent
+                    const sql_check_2 = `SELECT * FROM RecurringEvent
                         WHERE event_id = ?`;
                     db.connection.query(sql_check_2, [eid], (error, results, fields) => {
                         if (error) {
@@ -729,7 +756,7 @@ export const register = (app: Application) => {
                         }
                         
                         if (!isEmpty(results)) {
-                            let sql = `
+                            const sql = `
                                 INSERT INTO RecurringAttendance VALUES(?, ?);
                                 UPDATE Invite 
                                 INNER JOIN UserGroupInvite ON 
@@ -749,10 +776,10 @@ export const register = (app: Application) => {
                 }
                 case '2': {
                     // if user rejected invitation
-                    let sql = `
+                    const sql = `
                         SET FOREIGN_KEY_CHECKS = 0;
 
-                        DELETE EventInvite, Invite 
+                        delete EventInvite, Invite 
                         FROM EventInvite
                         INNER JOIN Invite ON
                         Invite.invite_id = EventInvite.invite_id
@@ -779,10 +806,10 @@ export const register = (app: Application) => {
         }        
     });
 
-    // Delete method (remove event from user's events (delete event for user, for everyone if organizer))
+    // delete method (remove event from user's events (delete event for user, for everyone if organizer))
     app.delete('/api/v1/users/:uid/events/:eid', (req: Request, res: Response) => {
-        let uid = req.params.uid;
-        let eid = req.params.eid;
+        const uid = req.params.uid;
+        const eid = req.params.eid;
         
         if (!uid || !eid) {
             return res.sendStatus(400);
@@ -791,7 +818,7 @@ export const register = (app: Application) => {
         // disable the foreign key check
         // re-enable foreign key check.
         // SET FOREIGN_KEY_CHECKS
-        let sql = `
+        const sql = `
             DELETE FROM SingularAttendance
                 WHERE SingularAttendance.user_id = ? AND SingularAttendance.event_id = ?;
 
@@ -814,51 +841,37 @@ export const register = (app: Application) => {
 
     // Get method (get all products by the user (as seller))
     app.get('/api/v1/users/:uid/products', (req: Request, res: Response) => {
-        let uid = req.params.uid;
+        const uid = req.params.uid;
         if (!uid) {
             return res.sendStatus(400);
         }
 
-        let sql = `SELECT * FROM Product WHERE seller_id = ?`;
+        const sql = `SELECT * FROM Product WHERE seller_id = ?`;
         db.connection.query(sql, [uid], (error, results, fields) => {
             if (error) {
                 return res.sendStatus(500);
             }
-            return res.send(results);
+            return res.send({
+                "products": results
+            });
         });
     });
 
     /* /users/<uid>/chats endpoint  */
     app.get('/api/v1/users/:uid/chats', (req: Request, res: Response) => {
-        let uid = req.params.uid;
+        const uid = req.params.uid;
         if (!uid) {
             return res.sendStatus(400);
         }
 
-        let sql = `SELECT * FROM Chat WHERE buyer_id = ? OR seller_id = ?`;
+        const sql = `SELECT * FROM Chat WHERE buyer_id = ? OR seller_id = ?`;
         db.connection.query(sql, [uid, uid], (error, results, fields) => {
             if (error) {
                 return res.sendStatus(500);
             }
-            return res.send(results);
+            return res.send({
+                "chats": results
+            });
         });
     });
 };
-
-/*
-    SET FOREIGN_KEY_CHECKS = 0;
-
-    DELETE EventInvite, Invite 
-    FROM EventInvite
-    INNER JOIN Invite ON
-    Invite.invite_id = EventInvite.invite_id
-    WHERE Invite.user_id = ? AND EventInvite.event_id = ?
-    DELETE EventRequest, Request
-    FROM EventRequest
-    INNER JOIN Request ON
-    Request.request_id = EventRequest.request_id
-    WHERE Request.user_id = ? AND EventRequest.event_id = ?
-
-    SET FOREIGN_KEY_CHECKS = 1;
-
-*/
