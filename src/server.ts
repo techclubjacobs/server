@@ -1,12 +1,12 @@
-import express from 'express';
 import * as bodyParser from "body-parser";
-import * as chats from './routes/chats';
-import * as events from './routes/events';
-import * as index from './routes/index';
-import * as metadata from './routes/metadata';
-import * as products from './routes/products';
-import * as usergroups from './routes/usergroups';
-import * as users from './routes/users';
+import express from "express";
+import * as chats from "./routes/chats";
+import * as events from "./routes/events";
+import * as index from "./routes/index";
+import * as metadata from "./routes/metadata";
+import * as products from "./routes/products";
+import * as usergroups from "./routes/usergroups";
+import * as users from "./routes/users";
 
 const app = express();
 
@@ -14,8 +14,8 @@ const app = express();
 app.use(bodyParser.json());
 // use Query String Parser middleware
 app.use(bodyParser.urlencoded({
-    extended: true
-}));  
+    extended: true,
+}));
 
 chats.register(app);
 events.register(app);

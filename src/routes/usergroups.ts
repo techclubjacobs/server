@@ -1,23 +1,23 @@
-import { Application, Request, Response } from 'express';
-import * as db from '../tools/db';
+import { Application, Request, Response } from "express";
+import * as db from "../tools/db";
 
 export const register = (app: Application) => {
     /* /usergroup endpoint */
 
     // Get method (get list of all usergroups)
-    app.get('/api/v1/usergroup', (req: Request, res: Response) => {
-        db.connection.query('SELECT * FROM UserGroup', (error, results, fields) => {
+    app.get("/api/v1/usergroup", (req: Request, res: Response) => {
+        db.connection.query("SELECT * FROM UserGroup", (error, results, fields) => {
             if (error) {
                 return res.sendStatus(500);
             }
             return res.send({
-                "usergroups": results
+                usergroups: results,
             });
         });
     });
 
     // Post method (create new usergroup)
-    app.post('/api/v1/usergroup', (req: Request, res: Response) => {
+    app.post("/api/v1/usergroup", (req: Request, res: Response) => {
         const title = req.body.title;
         const descrip = req.body.descrip;
         const max_capacity = req.body.max_capacity;
@@ -38,7 +38,7 @@ export const register = (app: Application) => {
     /* /usergroup/:ugid */
 
     // Get method (Get specific UserGroup)
-    app.get('/api/v1/usergroup/:ugid', (req: Request, res: Response) => {
+    app.get("/api/v1/usergroup/:ugid", (req: Request, res: Response) => {
         const ugid = req.params.ugid;
         if (!ugid) {
             return res.sendStatus(400);
@@ -50,16 +50,16 @@ export const register = (app: Application) => {
                 return res.sendStatus(500);
             }
             return res.send({
-                "usergroup": results
+                usergroup: results,
             });
         });
     });
 
     // PUT Method (Update Existing UserGroup)
-    app.put('/api/v1/usergroup/:ugid', (req: Request, res: Response) => {
+    app.put("/api/v1/usergroup/:ugid", (req: Request, res: Response) => {
         // restrict PUT (only admin or own user)
-        if (req.body.key != '5736ac861c2e50e0a2223dab84502a7e08bd904d'){
-            return res.sendStatus(401).send('You shall not pass');
+        if (req.body.key !== "5736ac861c2e50e0a2223dab84502a7e08bd904d") {
+            return res.sendStatus(401).send("You shall not pass");
         }
 
         const ugid = req.params.ugid;
@@ -84,10 +84,10 @@ export const register = (app: Application) => {
     });
 
     // Delete Method (Remove user group)
-    app.delete('/api/v1/usergroup/:ugid', (req: Request, res: Response) => {
+    app.delete("/api/v1/usergroup/:ugid", (req: Request, res: Response) => {
         // restrict DELETE (only admin or own user)
-        if (req.body.key != '5736ac861c2e50e0a2223dab84502a7e08bd904d'){
-            return res.sendStatus(401).send('You shall not pass');
+        if (req.body.key !== "5736ac861c2e50e0a2223dab84502a7e08bd904d") {
+            return res.sendStatus(401).send("You shall not pass");
         }
 
         const ugid = req.params.ugid;
@@ -107,7 +107,7 @@ export const register = (app: Application) => {
     /* /usergroup/:ugid/members */
 
     // Get method (get all members of usergroup)
-    app.get('/api/v1/usergroup/:ugid/members', (req: Request, res: Response) => {
+    app.get("/api/v1/usergroup/:ugid/members", (req: Request, res: Response) => {
         const ugid = req.params.ugid;
         if (!ugid) {
             return res.sendStatus(400);
@@ -118,20 +118,20 @@ export const register = (app: Application) => {
             SELECT * FROM User
             INNER JOIN UserGroupMembership ON
             UserGroupMembership.user_id = User.user_id
-            WHERE UserGroupMembership.usergroup_id = ?`; 
-        
+            WHERE UserGroupMembership.usergroup_id = ?`;
+
         db.connection.query(sql, [ugid], (error, results, fields) => {
             if (error) {
                 return res.sendStatus(500);
             }
             return res.send({
-                "members": results
+                members: results,
             });
         });
     });
 
     // Post method (add new member to the usergroup)
-    app.post('/api/v1/usergroup/:ugid/members', (req: Request, res: Response) => {
+    app.post("/api/v1/usergroup/:ugid/members", (req: Request, res: Response) => {
         const ugid = req.params.ugid;
         const user_id = req.body.user_id;
 
@@ -148,7 +148,7 @@ export const register = (app: Application) => {
     });
 
     // Delete Method (remove member from an usergroup)
-    app.delete('/api/v1/usergroup/:ugid/members/:uid', (req: Request, res: Response) => {
+    app.delete("/api/v1/usergroup/:ugid/members/:uid", (req: Request, res: Response) => {
         const ugid = req.params.ugid;
         const uid = req.params.uid;
 
@@ -169,13 +169,13 @@ export const register = (app: Application) => {
     /* /usergroup/:ugid/owners */
 
     // Get method (get all owners of an usergroup)
-    app.get('/api/v1/usergroup/:ugid/owners', (req: Request, res: Response) => {
+    app.get("/api/v1/usergroup/:ugid/owners", (req: Request, res: Response) => {
         const ugid = req.params.ugid;
         if (!ugid) {
             return res.sendStatus(400);
         }
 
-        //const sql = `SELECT user_id FROM UserGroupOwner
+        // const sql = `SELECT user_id FROM UserGroupOwner
         //    WHERE usergroup_id = ?`;
         const sql = `
             SELECT * FROM User
@@ -188,13 +188,13 @@ export const register = (app: Application) => {
                 return res.sendStatus(500);
             }
             return res.send({
-                "owners": results
+                owners: results,
             });
         });
     });
 
     // Post method (add new owner to the usergroup)
-    app.post('/api/v1/usergroup/:ugid/owners', (req: Request, res: Response) => {
+    app.post("/api/v1/usergroup/:ugid/owners", (req: Request, res: Response) => {
         const ugid = req.params.ugid;
         const user_id = req.body.user_id;
 
@@ -212,7 +212,7 @@ export const register = (app: Application) => {
     });
 
     // Delete Method (remove owner from an usergroup)
-    app.delete('/api/v1/usergroup/:ugid/owners/:uid', (req: Request, res: Response) => {
+    app.delete("/api/v1/usergroup/:ugid/owners/:uid", (req: Request, res: Response) => {
         const ugid = req.params.ugid;
         const uid = req.params.uid;
 
@@ -232,7 +232,7 @@ export const register = (app: Application) => {
     /* /usergroup/:ugid/invited */
 
     // Get method (get all invited users of an usergroup)
-    app.get('/api/v1/usergroup/:ugid/invited', (req: Request, res: Response) => {
+    app.get("/api/v1/usergroup/:ugid/invited", (req: Request, res: Response) => {
         const ugid = req.params.ugid;
 
         if (!ugid) {
@@ -247,7 +247,7 @@ export const register = (app: Application) => {
             SELECT * FROM User
             INNER JOIN Invite ON
             Invite.user_id = User.user_id
-            INNER JOIN UserGroupInvite ON 
+            INNER JOIN UserGroupInvite ON
             Invite.invite_id = UserGroupInvite.invite_id
             WHERE UserGroupInvite.usergroup_id = ?`;
 
@@ -256,13 +256,13 @@ export const register = (app: Application) => {
                 return res.sendStatus(500);
             }
             return res.send({
-                "invited": results
+                invited: results,
             });
         });
     });
 
     // Post method (invite new user to an usergroup)
-    app.post('/api/v1/usergroup/:ugid/invited', (req: Request, res: Response) => {
+    app.post("/api/v1/usergroup/:ugid/invited", (req: Request, res: Response) => {
         const ugid = req.params.ugid;
         const message = req.body.message || "You have been invited to an usergroup";
         const uid = req.body.uid;
@@ -276,8 +276,8 @@ export const register = (app: Application) => {
             VALUES(?, ?);
 
             INSERT INTO UserGroupInvite (invite_id, usergroup_id)
-            SELECT Invite.invite_id, ? 
-            FROM Invite 
+            SELECT Invite.invite_id, ?
+            FROM Invite
             WHERE Invite.user_id = ?; `;
 
         db.connection.query(sql, [uid, message, ugid, uid], (error, results, fields) => {
@@ -289,7 +289,7 @@ export const register = (app: Application) => {
     });
 
     // Delete Method (remove invitation of user to usergroup)
-    app.delete('/api/v1/usergroup/:ugid/invited/:uid', (req: Request, res: Response) => {
+    app.delete("/api/v1/usergroup/:ugid/invited/:uid", (req: Request, res: Response) => {
         const ugid = req.params.ugid;
         const inviteid = req.params.uid;
 
@@ -310,7 +310,7 @@ export const register = (app: Application) => {
     /* /usergroup/:ugid/requested */
 
     // Get method (get all requested users of usergroup)
-    app.get('/api/v1/usergroup/:ugid/requested', (req: Request, res: Response) => {
+    app.get("/api/v1/usergroup/:ugid/requested", (req: Request, res: Response) => {
         const ugid = req.params.ugid;
         if (!ugid) {
             return res.sendStatus(400);
@@ -320,7 +320,7 @@ export const register = (app: Application) => {
             SELECT * FROM User
             INNER JOIN Request ON
             Request.user_id = User.user_id
-            INNER JOIN GroupRequest ON 
+            INNER JOIN GroupRequest ON
             GroupRequest.request_id = Request.request_id
             WHERE GroupRequest.usergroup_id = ?`;
 
@@ -329,13 +329,13 @@ export const register = (app: Application) => {
                 return res.sendStatus(500);
             }
             return res.send({
-                "requested": results
+                requested: results,
             });
         });
     });
 
     // Post method (add a new request to join an usergroup)
-    app.post('/api/v1/usergroup/:ugid/requested', (req: Request, res: Response) => {
+    app.post("/api/v1/usergroup/:ugid/requested", (req: Request, res: Response) => {
         const ugid = req.params.ugid;
         const message = req.body.message || "You have requested to join an usergroup";
         const uid = req.body.uid;
@@ -344,15 +344,15 @@ export const register = (app: Application) => {
             return res.sendStatus(400);
         }
 
-        //const sql = `INSERT INTO GroupRequest VALUES(?, ?)`;
+        // const sql = `INSERT INTO GroupRequest VALUES(?, ?)`;
 
         const sql = `
             INSERT INTO Request (user_id, message)
             VALUES(?, ?);
-            
+
             INSERT INTO GroupRequest (request_id, usergroup_id)
-            SELECT Request.request_id, ? 
-            FROM Request 
+            SELECT Request.request_id, ?
+            FROM Request
             WHERE Request.user_id = ?;`;
 
         db.connection.query(sql, [uid, message, ugid, uid], (error, results, fields) => {
@@ -364,7 +364,7 @@ export const register = (app: Application) => {
     });
 
     // Delete method (remove request to join an usergroup)
-    app.delete('/api/v1/usergroup/:ugid/requested/:uid', (req: Request, res: Response) => {
+    app.delete("/api/v1/usergroup/:ugid/requested/:uid", (req: Request, res: Response) => {
         const ugid = req.params.ugid;
         const requestid = req.params.uid;
 
