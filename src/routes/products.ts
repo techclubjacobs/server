@@ -6,9 +6,11 @@ export const register = (app: express.Application) => {
     app.get('/api/v1/products', (request: any, response) => {
         db.connection.query(`SELECT * FROM Product WHERE 1;`, (err, res) => {
             if (err) {
-                response.sendStatus(500);
+                return response.sendStatus(500);
             } else {
-                response.send(res);
+                return response.send({
+                    products : res,
+                });
             }
 
         });
@@ -17,7 +19,7 @@ export const register = (app: express.Application) => {
     app.post('/api/v1/products', (request: any, response) => {
         // Need: Title, price
         if (!request.query.title || !request.query.price || !request.params.evcat_id || !request.params.user_id) {
-            response.sendStatus(400);
+            return response.sendStatus(400);
         } else {
             const now = new Date().toISOString().slice(0, 19).replace('T', ' ');
             db.connection.query(`INSERT INTO Product
@@ -26,9 +28,9 @@ export const register = (app: express.Application) => {
                 request.query.price, now, request.query.quantity],
             (err, res) => {
                 if (err) {
-                    response.sendStatus(500);
+                    return response.sendStatus(500);
                 } else {
-                response.sendStatus(201);
+                    return response.sendStatus(201);
                 }
             });
         }
@@ -37,9 +39,11 @@ export const register = (app: express.Application) => {
     app.get('/api/v1/products/:product_id', (request: any, response) => {
         db.connection.query(`SELECT * FROM Product WHERE product_id = ?`, [request.params.product_id], (err, res) => {
             if (err) {
-                response.sendStatus(500);
+                return response.sendStatus(500);
             } else {
-            response.send(res);
+                return response.send({
+                    product : res,
+                });
             }
         });
     });
@@ -48,9 +52,9 @@ export const register = (app: express.Application) => {
         db.connection.query(`UPDATE Product SET ? WHERE product_id = ?`,
         [request.body, request.params.product_id], (err, res) => {
             if (err) {
-                response.sendStatus(500);
+                return response.sendStatus(500);
             } else {
-            response.sendStatus(200);
+                return response.sendStatus(200);
             }
         });
     });
@@ -58,9 +62,9 @@ export const register = (app: express.Application) => {
     app.delete('/api/v1/products/:product_id', (request: any, response) => {
         db.connection.query(`DELETE FROM Product WHERE product_id = ?`, [request.params.product_id], (err, res) => {
             if (err) {
-                response.sendStatus(500);
+                return response.sendStatus(500);
             } else {
-            response.sendStatus(200);
+                return response.sendStatus(200);
             }
         });
     });
@@ -68,9 +72,11 @@ export const register = (app: express.Application) => {
     app.get('/api/v1/products/:product_id/chats', (request: any, response) => {
         db.connection.query(`SELECT * FROM Chat WHERE product_id = ?`, [request.params.product_id], (err, res) => {
             if (err) {
-                response.sendStatus(500);
+                return response.sendStatus(500);
             } else {
-                response.send(res);
+                return response.send({
+                    chat : res,
+                });
             }
         });
     });
@@ -78,13 +84,16 @@ export const register = (app: express.Application) => {
     app.post('/api/v1/products/:product_id/chats', (request: any, response) => {
         // Need: product_id, buyer_id, seller_id
         if (!request.params.product_id || !request.params.user_id || !request.params.seller_id) {
-            response.sendStatus(400);
+            return response.sendStatus(400);
         } else {
             db.connection.query(`INSERT INTO Chat (product_id, buyer_id, seller_id) values
             ('?','?','?')` , [request.params.product_id, request.params.user_id, request.params.seller_id],
              (err, res) => {
-                if (err) { response.sendStatus(500); }
-                response.sendStatus(201);
+                if (err) {
+                    return response.sendStatus(500);
+                } else {
+                    return response.sendStatus(201);
+                }
             });
         }
     });
