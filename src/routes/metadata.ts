@@ -1,13 +1,13 @@
-import { Application, Request, Response } from 'express';
-import * as db from '../tools/db';
+import { Application, Request, Response } from "express";
+import * as db from "../tools/db";
 
 // for location, categories, etc
 
 export const register = (app: Application) => {
 
     // GET ProductCategories
-    app.get('/api/v1/prodcats', (req: Request, res: Response) => {
-        db.connection.query('SELECT * from ProductCategory;', (error, results) => {
+    app.get("/api/v1/prodcats", (req: Request, res: Response) => {
+        db.connection.query("SELECT * from ProductCategory;", (error, results) => {
             if (error) {
                 return res.sendStatus(200);
             }
@@ -16,8 +16,8 @@ export const register = (app: Application) => {
     });
 
     // GET EventCategories
-    app.get('/api/v1/evcats', (req: Request, res: Response) => {
-        db.connection.query('SELECT * from EventCategory;', (error, results) => {
+    app.get("/api/v1/evcats", (req: Request, res: Response) => {
+        db.connection.query("SELECT * from EventCategory;", (error, results) => {
             if (error) {
                 return res.sendStatus(200);
             }
@@ -26,8 +26,8 @@ export const register = (app: Application) => {
     });
 
     // GET Locations
-    app.get('/api/v1/locations', (req: Request, res: Response) => {
-        db.connection.query('SELECT * from Location;', (error, results) => {
+    app.get("/api/v1/locations", (req: Request, res: Response) => {
+        db.connection.query("SELECT * from Location;", (error, results) => {
             if (error) {
                 return res.sendStatus(200);
             }
