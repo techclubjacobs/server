@@ -1,5 +1,5 @@
-import express from "express";
 import * as bodyParser from "body-parser";
+import express from "express";
 import * as chats from "./routes/chats";
 import * as events from "./routes/events";
 import * as index from "./routes/index";
@@ -14,8 +14,8 @@ const app = express();
 app.use(bodyParser.json());
 // use Query String Parser middleware
 app.use(bodyParser.urlencoded({
-    extended: true
-}));  
+    extended: true,
+}));
 
 chats.register(app);
 events.register(app);
