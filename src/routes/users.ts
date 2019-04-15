@@ -1,6 +1,5 @@
-import * as db from '../tools/db';
-import { Application, Response, Request } from "express";
-//import { json } from 'body-parser';
+import { Application, Request, Response } from "express";
+import * as db from "../tools/db";
 
 export const register = (app: Application) => {
     //Global variable
