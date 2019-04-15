@@ -1,37 +1,37 @@
-import * as db from '../tools/db';
 import { Application, Request, Response } from "express";
+import * as db from "../tools/db";
 
 export const register = (app: Application) => {
     /* /events endpoint */
 
     // Get method (get all events (filter by category, location, time))
-    app.get('/api/v1/events', (req: Request, res: Response) => {
+    app.get("/api/v1/events", (req: Request, res: Response) => {
         const filter_by = req.body.filter_by;
-        if (filter_by === 'category') {
-
-        }
-        else if (filter_by === 'location') {
-
-        }
-        else if (filter_by === 'time') {
-
-        }
-        else {
+        if (filter_by === "category") {
+            // todo
+            const todo = true;
+        } else if (filter_by === "location") {
+            // todo
+            const todo = true;
+        } else if (filter_by === "time") {
+            // todo
+            const todo = true;
+        } else {
             const sql = `SELECT * FROM Event`;
-            
+
             db.connection.query(sql, (error, results, fields) => {
                 if (error) {
                     return res.sendStatus(400);
                 }
                 return res.send({
-                    "events": results
+                    events: results,
                 });
             });
         }
     });
 
     // Post method (create new event)
-    app.post('/api/v1/events', (req: Request, res: Response) => {
+    app.post("/api/v1/events", (req: Request, res: Response) => {
         const title = req.body.title;
         const max_capacity = req.body.max_capacity;
         const content = req.body.content;
@@ -59,7 +59,7 @@ export const register = (app: Application) => {
 
     // Get method (can be single, recurring single or recurring (?) event)
     // get specific event
-    app.get('/api/v1/events/:evid', (req: Request, res: Response) => {
+    app.get("/api/v1/events/:evid", (req: Request, res: Response) => {
         const evid = req.params.evid;
         if (!evid) {
             return res.sendStatus(400);
@@ -68,7 +68,7 @@ export const register = (app: Application) => {
         const sql = `
             SELECT * FROM OneTimeEvent
             WHERE event_id = ?;
-            
+
             SELECT * FROM RecurringEvent
             INNER JOIN RecurringSingleEvent ON
             RecurringSingleEvent.recurringevent_id = RecurringEvent.recurringevent_id
@@ -80,14 +80,14 @@ export const register = (app: Application) => {
             }
 
             return res.send({
-                "OneTimeEvent": results[0],
-                "RecurringEvent": results[1]
+                OneTimeEvent: results[0],
+                RecurringEvent: results[1],
             });
         });
     });
 
     // Put method (update existing event)
-    app.put('/api/v1/events/:evid', (req: Request, res: Response) => {
+    app.put("/api/v1/events/:evid", (req: Request, res: Response) => {
         const evid = req.params.evid;
         const title = req.body.title;
         const max_capacity = req.body.max_capacity;
@@ -95,17 +95,17 @@ export const register = (app: Application) => {
         const ugid = req.body.ugid;
         const lid = req.body.lid;
         const evcat_id = req.body.evcat_id;
-        if (!evid || !title || !max_capacity || !content 
+        if (!evid || !title || !max_capacity || !content
             || !ugid || !lid || !evcat_id) {
             return res.sendStatus(400);
         }
-        
+
         const sql = `
             UPDATE Event
             SET title = ?, max_capacity = ?, content = ?,
             usergroup_id = ?, usergroup_id = ?, evcat_id = ?
             WHERE event_id = ?`;
-        
+
         db.connection.query(sql, [title, max_capacity, content,
             ugid, lid, evcat_id, evid], (error, results, fields) => {
 
@@ -118,7 +118,7 @@ export const register = (app: Application) => {
     });
 
     // Delete Method (remove existing event)
-    app.delete('/api/v1/events/:evid', (req: Request, res: Response) => {
+    app.delete("/api/v1/events/:evid", (req: Request, res: Response) => {
         const evid = req.params.evid;
         if (!evid) {
             return res.sendStatus(400);
@@ -126,7 +126,7 @@ export const register = (app: Application) => {
 
         const sql = `DELETE FROM Event
             WHERE event_id = ?`;
-        
+
         db.connection.query(sql, [evid], (error, results, fields) => {
             if (error) {
                 return res.sendStatus(500);
@@ -136,15 +136,15 @@ export const register = (app: Application) => {
     });
 
     /* /events/:evid/invited */
-    
+
     // Get method (get users that are invited to the event)
-    app.get('/api/v1/events/:evid/invited', (req: Request, res: Response) => {
+    app.get("/api/v1/events/:evid/invited", (req: Request, res: Response) => {
         const evid = req.params.evid;
         if (!evid) {
             return res.sendStatus(400);
         }
 
-        const sql = `SELECT * FROM User   
+        const sql = `SELECT * FROM User
             INNER JOIN Invite ON
             Invite.user_id = User.user_id
             INNER JOIN EventInvite ON
@@ -156,13 +156,13 @@ export const register = (app: Application) => {
                 return res.sendStatus(500);
             }
             return res.send({
-                "invited": results
+                invited: results,
             });
         });
     });
 
     // Post method (invite user to event)
-    app.post('/api/v1/events/:evid/invited', (req: Request, res: Response) => {
+    app.post("/api/v1/events/:evid/invited", (req: Request, res: Response) => {
         const evid = req.params.evid;
         const uid = req.body.uid;
         const message = req.body.message || "You have been invited to an event";
@@ -174,7 +174,7 @@ export const register = (app: Application) => {
         const sql = `
             INSERT INTO Invite (user_id, message)
             VALUES(?, ?);
-            
+
             INSERT INTO EventInvite(invite_id, event_id)
             SELECT Invite.invite_id, ? FROM Invite
             WHERE Invite.user_id = ?; `;
@@ -190,7 +190,7 @@ export const register = (app: Application) => {
     /* /events/:evid/confirmed */
 
     // Get method (get users that are attending event)
-    app.get('/api/v1/events/:evid/confirmed', (req: Request, res: Response) => {
+    app.get("/api/v1/events/:evid/confirmed", (req: Request, res: Response) => {
         const evid = req.params.evid;
         if (!evid) {
             return res.sendStatus(400);
@@ -206,13 +206,13 @@ export const register = (app: Application) => {
             INNER JOIN RecurringAttendance ON
             RecurringAttendance.user_id = User.user_id
             WHERE RecurringAttendance.event_id = ?)`;
-        
+
         db.connection.query(sql, [evid, evid], (error, results, fields) => {
             if (error) {
                 return res.sendStatus(500);
             }
             return res.send({
-                users: results
+                users: results,
             });
         });
     });
@@ -220,13 +220,13 @@ export const register = (app: Application) => {
     /* /events/:evid/requested */
 
     // Get method (get users that requested to join event)
-    app.get('/api/v1/events/:evid/requested', (req: Request, res: Response) => {
+    app.get("/api/v1/events/:evid/requested", (req: Request, res: Response) => {
         const evid = req.params.evid;
         if (!evid) {
             return res.sendStatus(400);
         }
 
-        const sql = `SELECT * FROM User   
+        const sql = `SELECT * FROM User
             INNER JOIN Request ON
             Request.user_id = User.user_id
             INNER JOIN EventRequest ON
@@ -238,13 +238,13 @@ export const register = (app: Application) => {
                 return res.sendStatus(500);
             }
             return res.send({
-                "requested": results
+                requested: results,
             });
         });
     });
 
     // Post method (request to join event)
-    app.post('/api/v1/events/:evid/requested', (req: Request, res: Response) => {
+    app.post("/api/v1/events/:evid/requested", (req: Request, res: Response) => {
         const evid = req.params.evid;
         const uid = req.body.uid;
         const message = req.body.message || "You have requested to join the event";
@@ -256,7 +256,7 @@ export const register = (app: Application) => {
         const sql = `
             INSERT INTO Request (user_id, message)
             VALUES(?, ?);
-            
+
             INSERT INTO EventRequest(request_id, event_id)
             SELECT Request.request_id, ? FROM Request
             WHERE Request.user_id = ?; `;
@@ -272,7 +272,7 @@ export const register = (app: Application) => {
     /* /events/:evid/organizing */
 
     // Get method (get event organizers)
-    app.get('/api/v1/events/:evid/organizing', (req: Request, res: Response) => {
+    app.get("/api/v1/events/:evid/organizing", (req: Request, res: Response) => {
         const evid = req.params.evid;
         if (!evid) {
             return res.sendStatus(400);
@@ -283,19 +283,19 @@ export const register = (app: Application) => {
             INNER JOIN Organizer ON
             Organizer.user_id = User.user_id
             WHERE Organizer.event_id = ?`;
-        
+
         db.connection.query(sql, [evid], (error, results, fields) => {
             if (error) {
                 return res.sendStatus(500);
             }
             return res.send({
-                "organizers": results 
+                organizers: results,
             });
         });
     });
 
     // Post method (add event organizer)
-    app.post('/api/v1/events/:evid/organizing', (req: Request, res: Response) => {
+    app.post("/api/v1/events/:evid/organizing", (req: Request, res: Response) => {
         const evid = req.params.evid;
         const uid = req.body.uid;
         if (!evid || !uid) {
