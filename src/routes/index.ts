@@ -1,9 +1,9 @@
-import * as express from 'express';
+import { Application, Request, Response } from "express";
 
-export const register = (app: express.Application) => {
+export const register = (app: Application) => {
 
-    app.get('/', (req: any, res) => {
-        res.send('Hello Jacobs.')
+    app.get("/", (req: Request, res: Response) => {
+        res.send("Hello Jacobs.");
     });
 
 };

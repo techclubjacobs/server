@@ -1,11 +1,12 @@
-import mysql from 'mysql';
+import mysql from "mysql";
 
 export const connection = mysql.createConnection({
-    database: 'JacobsApp',
-    host: 'localhost',
-    password: 'root',
+    database: "JacobsApp",
+    host: "localhost",
+    multipleStatements: true,
+    password: "root",
     port: 3306,
-    user: 'root',
+    user: "root",
 });
 
 connection.connect((err) => {
