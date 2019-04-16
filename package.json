@@ -22,12 +22,6 @@
   },
   "homepage": "https://github.com/techclubjacobs/server#readme",
   "devDependencies": {
-    "eslint": "^5.16.0",
-    "eslint-config-standard": "^12.0.0",
-    "eslint-plugin-import": "^2.17.1",
-    "eslint-plugin-node": "^8.0.1",
-    "eslint-plugin-promise": "^4.1.1",
-    "eslint-plugin-standard": "^4.0.0",
     "nodemon": "^1.18.10",
     "tslint": "^5.14.0",
     "typescript": "^3.3.4000"
