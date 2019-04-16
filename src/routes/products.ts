@@ -21,7 +21,7 @@ export const register = (app: Application) => {
         if (!request.query.title || !request.query.price || !request.params.evcat_id || !request.params.user_id) {
             return response.sendStatus(400);
         } else {
-            const now = new Date().toISOString().slice(0, 19).replace('T', ' ');
+            const now = new Date().toISOString().slice(0, 19).replace("T", " ");
             db.connection.query(`INSERT INTO Product
             (evcat_id, seller_id, title, price, published, active, sold, quantity) values ('?', '?', '?', 1, 0, ?);`,
             [request.params.evcat_id, request.params.user_id, request.query.title,

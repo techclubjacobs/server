@@ -4,11 +4,11 @@
   "description": "",
   "main": "dist/server.ts",
   "scripts": {
-    "build-ts": "tsc",
+    "build-ts": "tsc --lib dom",
     "start": "npm run serve",
     "serve": "node dist/server.js",
     "watch-node": "nodemon dist/server.js",
-    "watch-ts": "tsc -w",
+    "watch-ts": "tsc -w --lib dom",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
