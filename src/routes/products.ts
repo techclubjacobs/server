@@ -12,7 +12,6 @@ export const register = (app: Application) => {
                     products : res,
                 });
             }
-
         });
     });
 
